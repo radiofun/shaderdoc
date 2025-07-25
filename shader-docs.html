@@ -1,0 +1,3031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shader Programming Guide - Created with Claude AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            padding: 60px 0;
+            text-align: left;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .sidebar.open ~ .sidebar-toggle {
+            left: 300px;
+        }
+        .sidebar-toggle:hover {
+            background: #333;
+            transform: scale(1.05);
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .sidebar.open {
+            left: 0;
+        }
+        .nav-menu {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+        .nav-item {
+        }
+        .nav-button {
+            width: 100%;
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #374151;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 400;
+            text-align: left;
+            transition: all 0.2s ease;
+            border-radius: 0;
+        }
+        .nav-button:hover {
+            background: #f9fafb;
+            color: #111827;
+        }
+        .nav-button.active {
+            background: none;
+            color: #111827;
+            font-weight: 600;
+        }
+        .main-content {
+            transition: margin-left 0.3s ease;
+        }
+        .main-content.sidebar-open {
+            margin-left: 280px;
+        }
+
+        .content-section {
+            display: none;
+            padding: 60px 0;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 80px;
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 40px 0 16px 0;
+            color: #1a1a1a;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .demo-container {
+            background: #f8f8f8;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 32px;
+            margin: 32px 0;
+        }
+
+        .demo-canvas {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            background: #000;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        .demo-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .demo-control {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .demo-control label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .demo-control input[type="range"] {
+            width: 100%;
+            margin-bottom: 8px;
+            -webkit-appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e5e5;
+            outline: none;
+        }
+
+        .demo-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            cursor: pointer;
+        }
+
+        .demo-control input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            cursor: pointer;
+            border: none;
+        }
+
+        .demo-control select {
+            padding: 8px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            background: white;
+            color: #1a1a1a;
+            font-size: 14px;
+        }
+
+        .value-display {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .code-block {
+            background: #f8f8f8;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 24px 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .explanation {
+            background: #f8f8f8;
+            border-left: 4px solid #1a1a1a;
+            padding: 24px;
+            margin: 24px 0;
+        }
+
+        .explanation h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+        }
+
+        .explanation ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .explanation li {
+            color: #666;
+            margin-bottom: 8px;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .explanation li::before {
+            content: "•";
+            color: #1a1a1a;
+            position: absolute;
+            left: 0;
+        }
+
+        .error {
+            background: #fee !important;
+            border-color: #fcc !important;
+            color: #c00 !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex-direction: column;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            header {
+                padding: 40px 0;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .subtitle {
+                font-size: 18px;
+            }
+            
+            .content-section {
+                padding: 40px 0;
+            }
+            
+            .demo-canvas {
+                height: 300px;
+            }
+            
+            .demo-controls {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .main-content.sidebar-open {
+                margin-left: 0;
+            }
+            
+            .sidebar {
+                width: 100vw;
+                justify-content: flex-start;
+            }
+        }
+
+        .footer {
+            margin-top: 80px;
+            padding: 0 0 40px 0;
+            text-align: left;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            transition: margin-left 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .footer {
+                margin-left: 0;
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <button class="nav-button active" onclick="showTab('gradient')">
+                    Gradient Effects
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-button" onclick="showTab('fire')">
+                    Fire Simulation
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-button" onclick="showTab('waves')">
+                    Wave Animation
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-button" onclick="showTab('fbm')">
+                    Fractal Noise
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-button" onclick="showTab('particles')">
+                    Particle System
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-button" onclick="showTab('3d')">
+                    3D Graphics
+                </button>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <header>
+                <h1>Shader Programming Guide</h1>
+                <p class="subtitle">Interactive examples and comprehensive documentation for GPU programming</p>
+            </header>
+
+        <!-- Gradient Section -->
+        <div id="gradient" class="content-section active">
+            <div class="section">
+                <h2>Animated Gradient Effects</h2>
+                <p>Learn the fundamentals of fragment shaders by creating smooth, animated color transitions using mathematical functions and time-based animation.</p>
+                
+                <div class="demo-container">
+                    <canvas id="gradientCanvas" class="demo-canvas">WebGL not supported</canvas>
+                    <div class="demo-controls">
+                        <div class="demo-control">
+                            <label>Red Component</label>
+                            <input type="range" id="gradientRed" min="0" max="1" step="0.01" value="1">
+                            <span class="value-display" id="gradientRedValue">1.00</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Green Component</label>
+                            <input type="range" id="gradientGreen" min="0" max="1" step="0.01" value="0">
+                            <span class="value-display" id="gradientGreenValue">0.00</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Blue Component</label>
+                            <input type="range" id="gradientBlue" min="0" max="1" step="0.01" value="0">
+                            <span class="value-display" id="gradientBlueValue">0.00</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Animation Speed</label>
+                            <input type="range" id="gradientSpeed" min="0" max="3" step="0.1" value="1">
+                            <span class="value-display" id="gradientSpeedValue">1.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-glsl">precision mediump float;
+
+varying vec2 vTexCoord;
+uniform float time;
+uniform vec3 color1;
+uniform vec3 color2;
+
+void main() {
+    // Create animated gradient using sine wave
+    float gradient = (sin(time + vTexCoord.x * 3.14159) + 1.0) * 0.5;
+    
+    // Mix between two colors based on gradient
+    vec3 finalColor = mix(color1, color2, gradient);
+    
+    gl_FragColor = vec4(finalColor, 1.0);
+}</code></pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Key Concepts</h4>
+                    <ul>
+                        <li><strong>mix() function:</strong> Interpolates between two colors smoothly</li>
+                        <li><strong>sin() animation:</strong> Creates smooth oscillation over time</li>
+                        <li><strong>UV coordinates:</strong> vTexCoord provides 0-1 position across surface</li>
+                        <li><strong>Time uniform:</strong> Enables animation by providing elapsed time</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fire Section -->
+        <div id="fire" class="content-section">
+            <div class="section">
+                <h2>Procedural Fire Effect</h2>
+                <p>Create realistic fire effects using fractal noise patterns and organic motion simulation. This technique demonstrates advanced procedural generation.</p>
+                
+                <div class="demo-container">
+                    <canvas id="fireCanvas" class="demo-canvas">WebGL not supported</canvas>
+                    <div class="demo-controls">
+                        <div class="demo-control">
+                            <label>Flame Height</label>
+                            <input type="range" id="fireHeight" min="0.1" max="1" step="0.05" value="0.6">
+                            <span class="value-display" id="fireHeightValue">0.60</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Turbulence</label>
+                            <input type="range" id="fireTurbulence" min="0" max="0.3" step="0.01" value="0.1">
+                            <span class="value-display" id="fireTurbulenceValue">0.10</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Animation Speed</label>
+                            <input type="range" id="fireSpeed" min="0.1" max="2" step="0.1" value="1">
+                            <span class="value-display" id="fireSpeedValue">1.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Flicker Intensity</label>
+                            <input type="range" id="fireFlicker" min="0" max="0.8" step="0.05" value="0.4">
+                            <span class="value-display" id="fireFlickerValue">0.40</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-glsl">// Fire simulation using fractal noise
+float fractalNoise(vec2 p) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    float frequency = 1.0;
+    
+    for(int i = 0; i < 4; i++) {
+        value += amplitude * noise(p * frequency);
+        amplitude *= 0.5;
+        frequency *= 2.0;
+    }
+    
+    return value;
+}
+
+void main() {
+    vec2 uv = vTexCoord;
+    uv.y -= time * 0.5; // Upward motion
+    
+    // Add turbulence
+    float turbulence = fractalNoise(uv * 3.0 + time * 0.1);
+    uv.x += turbulence * 0.1;
+    
+    // Create fire shape
+    float fireShape = smoothstep(0.0, 0.3, 1.0 - uv.y) * 
+                      smoothstep(0.5, 0.0, abs(uv.x - 0.5));
+    
+    // Fire colors
+    vec3 fireRed = vec3(1.0, 0.1, 0.0);
+    vec3 fireYellow = vec3(1.0, 0.8, 0.2);
+    vec3 fireColor = mix(fireRed, fireYellow, uv.y);
+    
+    gl_FragColor = vec4(fireColor, fireShape);
+}</code></pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Fire Simulation Techniques</h4>
+                    <ul>
+                        <li><strong>Fractal noise:</strong> Combines multiple noise octaves for organic detail</li>
+                        <li><strong>UV distortion:</strong> Moves texture coordinates to create flow</li>
+                        <li><strong>smoothstep():</strong> Creates smooth transitions for realistic shapes</li>
+                        <li><strong>Color gradients:</strong> Red to yellow mimics real fire temperature</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Waves Section -->
+        <div id="waves" class="content-section">
+            <div class="section">
+                <h2>Wave Animation</h2>
+                <p>Understand vertex shader transformations by creating dynamic wave effects. Learn about mathematical functions and their visual representation.</p>
+                
+                <div class="demo-container">
+                    <canvas id="waveCanvas" class="demo-canvas">WebGL not supported</canvas>
+                    <div class="demo-controls">
+                        <div class="demo-control">
+                            <label>Wave Height</label>
+                            <input type="range" id="waveHeight" min="0.1" max="1.5" step="0.05" value="0.8">
+                            <span class="value-display" id="waveHeightValue">0.8</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Frequency</label>
+                            <input type="range" id="waveFrequency" min="1" max="10" step="0.5" value="3">
+                            <span class="value-display" id="waveFrequencyValue">3</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Speed</label>
+                            <input type="range" id="waveSpeed" min="0.1" max="5" step="0.1" value="1">
+                            <span class="value-display" id="waveSpeedValue">1</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Wave Type</label>
+                            <select id="waveType">
+                                <option value="sine">Sine Wave</option>
+                                <option value="cosine">Cosine Wave</option>
+                                <option value="combined">Combined Waves</option>
+                                <option value="ripple">Water Ripples</option>
+                                <option value="interference">Interference Pattern</option>
+                                <option value="standing">Standing Wave</option>
+                            </select>
+                        </div>
+                        <div class="demo-control">
+                            <label>Visualization Mode</label>
+                            <select id="waveVisualMode">
+                                <option value="lines" selected>Vertical Lines</option>
+                                <option value="curve">Continuous Curve</option>
+                                <option value="both">Both</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-glsl">// Wave animation in fragment shader
+void main() {
+    vec2 uv = vTexCoord;
+    float wave = 0.0;
+    
+    if (waveType == 0) {
+        // Simple sine wave
+        wave = sin(uv.x * frequency + time) * waveHeight;
+    } else if (waveType == 1) {
+        // Combined waves
+        wave = sin(uv.x * frequency + time) * 
+               cos(uv.y * frequency * 0.5 + time * 0.7) * waveHeight;
+    } else {
+        // Ripple effect
+        float dist = distance(uv, vec2(0.5));
+        wave = sin(dist * frequency * 10.0 - time * 3.0) * 
+               waveHeight * (1.0 - dist);
+    }
+    
+    float intensity = 0.5 + wave;
+    vec3 color = mix(vec3(0.1, 0.3, 0.8), vec3(0.3, 0.7, 1.0), intensity);
+    
+    gl_FragColor = vec4(color, 1.0);
+}</code></pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Wave Mathematics</h4>
+                    <ul>
+                        <li><strong>sin() function:</strong> Creates periodic oscillation</li>
+                        <li><strong>Frequency:</strong> Controls how many waves fit in the space</li>
+                        <li><strong>Amplitude:</strong> Controls wave height/intensity</li>
+                        <li><strong>Phase:</strong> Time offset creates animation movement</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- FBM Section -->
+        <div id="fbm" class="content-section">
+            <div class="section">
+                <h2>Fractal Brownian Motion</h2>
+                <p>Generate complex natural patterns using layered noise functions. This fundamental technique is used for clouds, terrain, and organic textures.</p>
+                
+                <div class="demo-container">
+                    <canvas id="fbmCanvas" class="demo-canvas">WebGL not supported</canvas>
+                    <div class="demo-controls">
+                        <div class="demo-control">
+                            <label>Octaves</label>
+                            <input type="range" id="fbmOctaves" min="1" max="8" step="1" value="4">
+                            <span class="value-display" id="fbmOctavesValue">4</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Frequency</label>
+                            <input type="range" id="fbmFrequency" min="0.5" max="8" step="0.5" value="2">
+                            <span class="value-display" id="fbmFrequencyValue">2.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Amplitude</label>
+                            <input type="range" id="fbmAmplitude" min="0.1" max="2" step="0.1" value="1">
+                            <span class="value-display" id="fbmAmplitudeValue">1.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Animation Speed</label>
+                            <input type="range" id="fbmSpeed" min="0" max="3" step="0.1" value="1">
+                            <span class="value-display" id="fbmSpeedValue">1.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-glsl">// Fractal Brownian Motion implementation
+float fbm(vec2 p) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    float frequency = 1.0;
+    
+    for(int i = 0; i < octaves; i++) {
+        value += amplitude * smoothNoise(p * frequency + time * 0.1);
+        amplitude *= 0.5; // Each octave contributes half as much
+        frequency *= 2.0; // Each octave is twice as detailed
+    }
+    
+    return value;
+}
+
+void main() {
+    vec2 uv = vTexCoord;
+    float pattern = fbm(uv * 4.0);
+    
+    // Create cloud-like coloring
+    vec3 color1 = vec3(0.1, 0.3, 0.8); // Blue
+    vec3 color2 = vec3(1.0, 1.0, 1.0); // White
+    vec3 color3 = vec3(0.8, 0.8, 0.9); // Light gray
+    
+    vec3 finalColor = mix(mix(color1, color2, pattern * 2.0), 
+                         color3, smoothstep(0.5, 1.0, pattern));
+    
+    gl_FragColor = vec4(finalColor, 1.0);
+}</code></pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>FBM Principles</h4>
+                    <ul>
+                        <li><strong>Octaves:</strong> Layers of noise at different scales</li>
+                        <li><strong>Amplitude decay:</strong> Each layer contributes less detail</li>
+                        <li><strong>Frequency doubling:</strong> Each layer adds finer features</li>
+                        <li><strong>Self-similarity:</strong> Pattern looks similar at all scales</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Particles Section -->
+        <div id="particles" class="content-section">
+            <div class="section">
+                <h2>GPU Particle System</h2>
+                <p>Simulate thousands of particles entirely on the GPU using mathematical functions and parallel processing for maximum performance.</p>
+                
+                <div class="demo-container">
+                    <canvas id="particleCanvas" class="demo-canvas">WebGL not supported</canvas>
+                    <div class="demo-controls">
+                        <div class="demo-control">
+                            <label>Particle Count</label>
+                            <input type="range" id="particleCount" min="10" max="100" step="5" value="50">
+                            <span class="value-display" id="particleCountValue">50</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Particle Size</label>
+                            <input type="range" id="particleSize" min="0.5" max="3" step="0.1" value="1.5">
+                            <span class="value-display" id="particleSizeValue">1.5</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Movement Speed</label>
+                            <input type="range" id="particleSpeed" min="0.1" max="2" step="0.1" value="0.5">
+                            <span class="value-display" id="particleSpeedValue">0.5</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Gravity</label>
+                            <input type="range" id="particleGravity" min="-1" max="1" step="0.1" value="0.2">
+                            <span class="value-display" id="particleGravityValue">0.2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-glsl">// GPU particle simulation
+float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+vec4 getParticle(float id) {
+    vec2 seed = vec2(id, id * 0.1);
+    
+    // Initial position and velocity
+    float x = hash(seed) * 2.0 - 1.0;
+    float y = hash(seed + vec2(1.0, 0.0)) * 2.0 - 1.0;
+    float vx = (hash(seed + vec2(2.0, 0.0)) - 0.5) * 0.5;
+    float vy = hash(seed + vec2(3.0, 0.0)) * 0.5 + 0.5;
+    
+    return vec4(x, y, vx, vy);
+}
+
+void main() {
+    vec2 uv = vTexCoord * 2.0 - 1.0;
+    vec3 color = vec3(0.0);
+    
+    // Simulate multiple particles
+    for(float i = 0.0; i < maxParticles; i++) {
+        if(i >= particleCount) break;
+        
+        vec4 particle = getParticle(i);
+        vec2 pos = particle.xy;
+        vec2 vel = particle.zw;
+        
+        // Physics simulation
+        vel.y += gravity * time;
+        pos += vel * time * speed;
+        
+        // Wrap particles
+        pos = mod(pos + 1.0, 2.0) - 1.0;
+        
+        // Render particle
+        float dist = distance(uv, pos);
+        float intensity = 1.0 / (1.0 + dist * 20.0 / particleSize);
+        
+        vec3 particleColor = vec3(
+            0.5 + 0.5 * sin(i * 0.1 + time),
+            0.5 + 0.5 * sin(i * 0.2 + time + 2.0),
+            0.5 + 0.5 * sin(i * 0.3 + time + 4.0)
+        );
+        
+        color += particleColor * intensity;
+    }
+    
+    gl_FragColor = vec4(color, 1.0);
+}</code></pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>GPU Particle Techniques</h4>
+                    <ul>
+                        <li><strong>Hash functions:</strong> Generate pseudo-random values consistently</li>
+                        <li><strong>Physics simulation:</strong> Apply gravity and velocity updates</li>
+                        <li><strong>Distance fields:</strong> Create soft particle rendering</li>
+                        <li><strong>Parallel processing:</strong> All particles calculated simultaneously</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Graphics Section -->
+        <div id="3d" class="content-section">
+            <div class="section">
+                <h2>3D Rotating Cube</h2>
+                <p>Learn 3D graphics fundamentals with matrix transformations, perspective projection, and vertex manipulation. This example demonstrates the Model-View-Projection pipeline.</p>
+                
+                <div class="demo-container">
+                    <canvas id="cubeCanvas" class="demo-canvas">WebGL not supported</canvas>
+                    <div class="demo-controls">
+                        <div class="demo-control">
+                            <label>Rotation Speed X</label>
+                            <input type="range" id="cubeRotationX" min="0" max="3" step="0.1" value="1">
+                            <span class="value-display" id="cubeRotationXValue">1.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Rotation Speed Y</label>
+                            <input type="range" id="cubeRotationY" min="0" max="3" step="0.1" value="0.5">
+                            <span class="value-display" id="cubeRotationYValue">0.5</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Camera Distance</label>
+                            <input type="range" id="cubeCameraDistance" min="2" max="8" step="0.2" value="4">
+                            <span class="value-display" id="cubeCameraDistanceValue">4.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Wireframe Mode</label>
+                            <select id="cubeWireframe">
+                                <option value="false">Solid</option>
+                                <option value="true">Wireframe</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-glsl">// Vertex Shader - 3D Transformations
+attribute vec3 a_position;
+attribute vec3 a_color;
+
+uniform mat4 u_modelMatrix;
+uniform mat4 u_viewMatrix;
+uniform mat4 u_projectionMatrix;
+uniform float u_time;
+
+varying vec3 v_color;
+varying vec3 v_position;
+
+void main() {
+    // Apply model transformation (rotation)
+    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);
+    
+    // Apply view transformation (camera)
+    vec4 viewPosition = u_viewMatrix * worldPosition;
+    
+    // Apply projection transformation (perspective)
+    gl_Position = u_projectionMatrix * viewPosition;
+    
+    // Pass color and position to fragment shader
+    v_color = a_color;
+    v_position = worldPosition.xyz;
+}
+
+// Fragment Shader - Per-pixel coloring
+precision mediump float;
+
+varying vec3 v_color;
+varying vec3 v_position;
+
+void main() {
+    // Simple lighting based on position
+    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+    vec3 normal = normalize(cross(dFdx(v_position), dFdy(v_position)));
+    float diffuse = max(dot(normal, lightDir), 0.3);
+    
+    vec3 finalColor = v_color * diffuse;
+    gl_FragColor = vec4(finalColor, 1.0);
+}</code></pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>3D Graphics Pipeline</h4>
+                    <ul>
+                        <li><strong>Model Matrix:</strong> Transforms object from local to world space</li>
+                        <li><strong>View Matrix:</strong> Transforms world space to camera space</li>
+                        <li><strong>Projection Matrix:</strong> Applies perspective transformation</li>
+                        <li><strong>MVP Pipeline:</strong> The fundamental 3D rendering equation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>3D Sphere with Lighting</h2>
+                <p>Advanced 3D rendering with procedural sphere generation and Phong lighting model. Demonstrates surface normals and realistic lighting calculations.</p>
+                
+                <div class="demo-container">
+                    <canvas id="sphereCanvas" class="demo-canvas">WebGL not supported</canvas>
+                    <div class="demo-controls">
+                        <div class="demo-control">
+                            <label>Sphere Detail</label>
+                            <input type="range" id="sphereDetail" min="10" max="50" step="5" value="30">
+                            <span class="value-display" id="sphereDetailValue">30</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Light Position X</label>
+                            <input type="range" id="lightPositionX" min="-5" max="5" step="0.5" value="2">
+                            <span class="value-display" id="lightPositionXValue">2.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Light Position Y</label>
+                            <input type="range" id="lightPositionY" min="-5" max="5" step="0.5" value="2">
+                            <span class="value-display" id="lightPositionYValue">2.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Material Shininess</label>
+                            <input type="range" id="sphereShininess" min="1" max="100" step="5" value="32">
+                            <span class="value-display" id="sphereShininessValue">32</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Render Mode</label>
+                            <select id="sphereWireframe">
+                                <option value="false">Solid</option>
+                                <option value="true">Wireframe</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-glsl">// Procedural Sphere Generation
+vec3 generateSphereVertex(float u, float v) {
+    float phi = u * 2.0 * 3.14159;
+    float theta = v * 3.14159;
+    
+    return vec3(
+        sin(theta) * cos(phi),
+        cos(theta),
+        sin(theta) * sin(phi)
+    );
+}
+
+// Phong Lighting Model
+vec3 calculatePhongLighting(vec3 position, vec3 normal, vec3 lightPos, vec3 viewPos) {
+    vec3 lightDir = normalize(lightPos - position);
+    vec3 viewDir = normalize(viewPos - position);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    
+    // Ambient component
+    vec3 ambient = 0.1 * vec3(1.0, 1.0, 1.0);
+    
+    // Diffuse component
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = diff * vec3(0.8, 0.4, 0.2);
+    
+    // Specular component
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    vec3 specular = spec * vec3(1.0, 1.0, 1.0);
+    
+    return ambient + diffuse + specular;
+}</code></pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Advanced 3D Concepts</h4>
+                    <ul>
+                        <li><strong>Procedural Geometry:</strong> Generate sphere vertices mathematically</li>
+                        <li><strong>Surface Normals:</strong> Calculate proper lighting directions</li>
+                        <li><strong>Phong Lighting:</strong> Ambient + Diffuse + Specular components</li>
+                        <li><strong>Parametric Surfaces:</strong> UV coordinates for 3D shapes</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>3D Terrain Generation</h2>
+                <p>Create realistic 3D landscapes using height maps and vertex displacement. This technique is fundamental for game development and 3D visualization.</p>
+                
+                <div class="demo-container">
+                    <canvas id="terrainCanvas" class="demo-canvas">WebGL not supported</canvas>
+                    <div class="demo-controls">
+                        <div class="demo-control">
+                            <label>Height Amplitude</label>
+                            <input type="range" id="terrainAmplitude" min="0.1" max="3" step="0.1" value="1.0">
+                            <span class="value-display" id="terrainAmplitudeValue">1.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Noise Frequency</label>
+                            <input type="range" id="terrainFrequency" min="0.1" max="3" step="0.1" value="1.0">
+                            <span class="value-display" id="terrainFrequencyValue">1.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Camera Distance</label>
+                            <input type="range" id="terrainCameraDistance" min="3" max="12" step="0.5" value="6.0">
+                            <span class="value-display" id="terrainCameraDistanceValue">6.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Animation Speed</label>
+                            <input type="range" id="terrainAnimationSpeed" min="0" max="2" step="0.1" value="1.0">
+                            <span class="value-display" id="terrainAnimationSpeedValue">1.0</span>
+                        </div>
+                        <div class="demo-control">
+                            <label>Render Mode</label>
+                            <select id="terrainWireframe">
+                                <option value="false">Solid</option>
+                                <option value="true">Wireframe</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-glsl">// Vertex Shader - Terrain Height Displacement
+attribute vec3 a_position;
+
+uniform mat4 u_modelMatrix;
+uniform mat4 u_viewMatrix;
+uniform mat4 u_projectionMatrix;
+uniform float u_time;
+uniform float u_amplitude;
+uniform float u_frequency;
+
+varying vec3 v_worldPosition;
+varying float v_height;
+
+// Simple noise function
+float noise(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+void main() {
+    vec3 position = a_position;
+    
+    // Generate height using simple noise
+    vec2 noiseCoord = position.xz * u_frequency;
+    float height1 = noise(noiseCoord) * u_amplitude;
+    float height2 = noise(noiseCoord * 2.0) * u_amplitude * 0.5;
+    float height3 = noise(noiseCoord * 4.0) * u_amplitude * 0.25;
+    
+    float totalHeight = height1 + height2 + height3;
+    
+    // Add animated waves
+    totalHeight += sin(position.x * 2.0 + u_time) * 0.1;
+    totalHeight += cos(position.z * 1.5 + u_time * 0.7) * 0.08;
+    
+    position.y += totalHeight;
+    v_height = totalHeight;
+    
+    vec4 worldPosition = u_modelMatrix * vec4(position, 1.0);
+    vec4 viewPosition = u_viewMatrix * worldPosition;
+    gl_Position = u_projectionMatrix * viewPosition;
+    
+    v_worldPosition = worldPosition.xyz;
+}
+
+// Fragment Shader - Height-based coloring
+precision mediump float;
+
+varying vec3 v_worldPosition;
+varying float v_height;
+
+void main() {
+    // Color based on height
+    vec3 lowColor = vec3(0.2, 0.4, 0.1);  // Dark green (valleys)
+    vec3 midColor = vec3(0.4, 0.6, 0.2);  // Light green (hills)
+    vec3 highColor = vec3(0.8, 0.8, 0.6); // Tan (peaks)
+    
+    float normalizedHeight = (v_height + 1.0) * 0.5;
+    
+    vec3 color;
+    if(normalizedHeight < 0.5) {
+        color = mix(lowColor, midColor, normalizedHeight * 2.0);
+    } else {
+        color = mix(midColor, highColor, (normalizedHeight - 0.5) * 2.0);
+    }
+    
+    // Simple lighting
+    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+    vec3 normal = normalize(cross(dFdx(v_worldPosition), dFdy(v_worldPosition)));
+    float diffuse = max(dot(normal, lightDir), 0.3);
+    
+    gl_FragColor = vec4(color * diffuse, 1.0);
+}</code></pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Terrain Generation Techniques</h4>
+                    <ul>
+                        <li><strong>Height Maps:</strong> Use noise functions to displace vertices vertically</li>
+                        <li><strong>Multi-octave Noise:</strong> Layer different frequencies for realistic terrain</li>
+                        <li><strong>Vertex Displacement:</strong> Modify geometry in vertex shader</li>
+                        <li><strong>Height-based Coloring:</strong> Different colors for valleys, hills, and peaks</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Initializing Shader Documentation...');
+
+        // WebGL utility functions
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compilation error:', gl.getShaderInfoLog(shader));
+                return null;
+            }
+            
+            return shader;
+        }
+
+        function createProgram(gl, vertexShader, fragmentShader) {
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error('Program linking error:', gl.getProgramInfoLog(program));
+                return null;
+            }
+            
+            return program;
+        }
+
+        function setupQuad(gl) {
+            const positions = new Float32Array([
+                -1, -1,  0, 0,
+                 1, -1,  1, 0,
+                -1,  1,  0, 1,
+                 1,  1,  1, 1
+            ]);
+            
+            const buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+            
+            return buffer;
+        }
+
+        function showError(canvas, message) {
+            canvas.classList.add('error');
+            canvas.innerHTML = `⚠️ ${message}<br><small>WebGL demo unavailable</small>`;
+            console.error('WebGL Error:', message);
+        }
+
+        function initCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                console.error(`Canvas ${canvasId} not found`);
+                return null;
+            }
+            
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (!gl) {
+                showError(canvas, 'WebGL not supported');
+                return null;
+            }
+            
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = Math.floor(rect.width);
+            canvas.height = Math.floor(rect.height);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            
+            return { canvas, gl };
+        }
+
+        // Demo implementations
+        const demos = {
+            gradient: function() {
+                const result = initCanvas('gradientCanvas');
+                if (!result) return;
+                
+                const { canvas, gl } = result;
+                
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    attribute vec2 a_texCoord;
+                    varying vec2 vTexCoord;
+                    
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                        vTexCoord = a_texCoord;
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision mediump float;
+                    varying vec2 vTexCoord;
+                    uniform float time;
+                    uniform vec3 color1;
+                    uniform vec3 color2;
+                    
+                    void main() {
+                        float gradient = (sin(time + vTexCoord.x * 3.14159) + 1.0) * 0.5;
+                        vec3 finalColor = mix(color1, color2, gradient);
+                        gl_FragColor = vec4(finalColor, 1.0);
+                    }
+                `;
+                
+                const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+                const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+                
+                if (!vertexShader || !fragmentShader) {
+                    showError(canvas, 'Shader compilation failed');
+                    return;
+                }
+                
+                const program = createProgram(gl, vertexShader, fragmentShader);
+                if (!program) {
+                    showError(canvas, 'Program linking failed');
+                    return;
+                }
+                
+                const buffer = setupQuad(gl);
+                
+                const positionLocation = gl.getAttribLocation(program, 'a_position');
+                const texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
+                const timeLocation = gl.getUniformLocation(program, 'time');
+                const color1Location = gl.getUniformLocation(program, 'color1');
+                const color2Location = gl.getUniformLocation(program, 'color2');
+                
+                let startTime = Date.now();
+                let animationSpeed = 1.0;
+                let color1 = [1.0, 0.0, 0.0];
+                const color2 = [0.0, 0.5, 1.0];
+                
+                function render() {
+                    const currentTime = (Date.now() - startTime) * 0.001 * animationSpeed;
+                    
+                    gl.clearColor(0, 0, 0, 1);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    
+                    gl.useProgram(program);
+                    
+                    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                    gl.enableVertexAttribArray(positionLocation);
+                    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 16, 0);
+                    gl.enableVertexAttribArray(texCoordLocation);
+                    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 16, 8);
+                    
+                    gl.uniform1f(timeLocation, currentTime);
+                    gl.uniform3fv(color1Location, color1);
+                    gl.uniform3fv(color2Location, color2);
+                    
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                    
+                    requestAnimationFrame(render);
+                }
+                
+                // Controls
+                const controls = {
+                    red: document.getElementById('gradientRed'),
+                    green: document.getElementById('gradientGreen'),
+                    blue: document.getElementById('gradientBlue'),
+                    speed: document.getElementById('gradientSpeed')
+                };
+                
+                function updateControls() {
+                    if (controls.red) {
+                        color1[0] = parseFloat(controls.red.value);
+                        document.getElementById('gradientRedValue').textContent = controls.red.value;
+                    }
+                    if (controls.green) {
+                        color1[1] = parseFloat(controls.green.value);
+                        document.getElementById('gradientGreenValue').textContent = controls.green.value;
+                    }
+                    if (controls.blue) {
+                        color1[2] = parseFloat(controls.blue.value);
+                        document.getElementById('gradientBlueValue').textContent = controls.blue.value;
+                    }
+                    if (controls.speed) {
+                        animationSpeed = parseFloat(controls.speed.value);
+                        document.getElementById('gradientSpeedValue').textContent = controls.speed.value;
+                    }
+                }
+                
+                Object.values(controls).forEach(control => {
+                    if (control) control.addEventListener('input', updateControls);
+                });
+                
+                render();
+                console.log('Gradient demo initialized');
+            },
+
+            fire: function() {
+                const result = initCanvas('fireCanvas');
+                if (!result) return;
+                
+                const { canvas, gl } = result;
+                
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    attribute vec2 a_texCoord;
+                    varying vec2 vTexCoord;
+                    
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                        vTexCoord = a_texCoord;
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision mediump float;
+                    varying vec2 vTexCoord;
+                    uniform float time;
+                    uniform float fireHeight;
+                    uniform float turbulence;
+                    uniform float flicker;
+                    
+                    // Improved noise function
+                    float noise(vec2 p) {
+                        return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+                    }
+                    
+                    // Better interpolated noise
+                    float smoothNoise(vec2 p) {
+                        vec2 i = floor(p);
+                        vec2 f = fract(p);
+                        f = f * f * (3.0 - 2.0 * f); // Smooth interpolation
+                        
+                        float a = noise(i);
+                        float b = noise(i + vec2(1.0, 0.0));
+                        float c = noise(i + vec2(0.0, 1.0));
+                        float d = noise(i + vec2(1.0, 1.0));
+                        
+                        return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+                    }
+                    
+                    // Fractal noise with multiple octaves
+                    float fractalNoise(vec2 p) {
+                        float value = 0.0;
+                        float amplitude = 0.5;
+                        float frequency = 1.0;
+                        
+                        for(int i = 0; i < 4; i++) {
+                            value += amplitude * smoothNoise(p * frequency);
+                            amplitude *= 0.5;
+                            frequency *= 2.0;
+                        }
+                        
+                        return value;
+                    }
+                    
+                    void main() {
+                        vec2 uv = vTexCoord;
+                        
+                        // Animate upward motion
+                        uv.y -= time * 0.3;
+                        
+                        // Create base fire shape - narrower at top, wider at bottom
+                        float baseShape = smoothstep(0.0, 0.2, fireHeight - uv.y) * 
+                                          smoothstep(0.6, 0.0, abs(uv.x - 0.5) + uv.y * 0.3);
+                        
+                        // Add primary turbulence
+                        float primaryNoise = fractalNoise(uv * 2.0 + time * 0.1);
+                        uv.x += primaryNoise * turbulence;
+                        
+                        // Add secondary smaller turbulence for detail
+                        float detailNoise = fractalNoise(uv * 8.0 + time * 0.2);
+                        uv.x += detailNoise * turbulence * 0.3;
+                        
+                        // Recalculate shape after distortion
+                        float fireShape = smoothstep(0.0, 0.2, fireHeight - uv.y) * 
+                                          smoothstep(0.6, 0.0, abs(uv.x - 0.5) + uv.y * 0.3);
+                        
+                        // Add flicker effect
+                        float flickerNoise = fractalNoise(uv * 6.0 + time * 0.8);
+                        fireShape *= (0.7 + flicker * flickerNoise * 0.5);
+                        
+                        // Improved color gradient
+                        vec3 fireRed = vec3(1.0, 0.05, 0.0);      // Deep red at base
+                        vec3 fireOrange = vec3(1.0, 0.3, 0.0);    // Orange middle
+                        vec3 fireYellow = vec3(1.0, 0.8, 0.1);    // Yellow-white tips
+                        vec3 fireWhite = vec3(1.0, 0.95, 0.8);    // Hot white core
+                        
+                        vec3 fireColor;
+                        float colorPos = uv.y + primaryNoise * 0.2; // Add some noise to color transition
+                        
+                        if(colorPos < 0.2) {
+                            fireColor = mix(fireRed, fireOrange, colorPos / 0.2);
+                        } else if(colorPos < 0.5) {
+                            fireColor = mix(fireOrange, fireYellow, (colorPos - 0.2) / 0.3);
+                        } else {
+                            fireColor = mix(fireYellow, fireWhite, (colorPos - 0.5) / 0.3);
+                        }
+                        
+                        // Add some blue tint at the very base for realism
+                        if(uv.y < 0.1) {
+                            vec3 fireBlue = vec3(0.1, 0.2, 1.0);
+                            fireColor = mix(fireBlue, fireColor, uv.y / 0.1);
+                        }
+                        
+                        // Enhance brightness in the center
+                        float centerBrightness = 1.0 - abs(uv.x - 0.5) * 2.0;
+                        fireColor *= (0.8 + centerBrightness * 0.4);
+                        
+                        gl_FragColor = vec4(fireColor, fireShape);
+                    }
+                `;
+                
+                const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+                const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+                
+                if (!vertexShader || !fragmentShader) {
+                    showError(canvas, 'Shader compilation failed');
+                    return;
+                }
+                
+                const program = createProgram(gl, vertexShader, fragmentShader);
+                if (!program) {
+                    showError(canvas, 'Program linking failed');
+                    return;
+                }
+                
+                const buffer = setupQuad(gl);
+                
+                const positionLocation = gl.getAttribLocation(program, 'a_position');
+                const texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
+                const timeLocation = gl.getUniformLocation(program, 'time');
+                const fireHeightLocation = gl.getUniformLocation(program, 'fireHeight');
+                const turbulenceLocation = gl.getUniformLocation(program, 'turbulence');
+                const flickerLocation = gl.getUniformLocation(program, 'flicker');
+                
+                let startTime = Date.now();
+                let animationSpeed = 1.0;
+                let fireHeight = 0.6;
+                let turbulenceAmount = 0.1;
+                let flickerAmount = 0.4;
+                
+                function render() {
+                    const currentTime = (Date.now() - startTime) * 0.001 * animationSpeed;
+                    
+                    gl.enable(gl.BLEND);
+                    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                    gl.clearColor(0, 0, 0, 1);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    
+                    gl.useProgram(program);
+                    
+                    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                    gl.enableVertexAttribArray(positionLocation);
+                    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 16, 0);
+                    gl.enableVertexAttribArray(texCoordLocation);
+                    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 16, 8);
+                    
+                    gl.uniform1f(timeLocation, currentTime);
+                    gl.uniform1f(fireHeightLocation, fireHeight);
+                    gl.uniform1f(turbulenceLocation, turbulenceAmount);
+                    gl.uniform1f(flickerLocation, flickerAmount);
+                    
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                    
+                    requestAnimationFrame(render);
+                }
+                
+                // Controls
+                const controls = {
+                    height: document.getElementById('fireHeight'),
+                    turbulence: document.getElementById('fireTurbulence'),
+                    speed: document.getElementById('fireSpeed'),
+                    flicker: document.getElementById('fireFlicker')
+                };
+                
+                function updateControls() {
+                    if (controls.height) {
+                        fireHeight = parseFloat(controls.height.value);
+                        document.getElementById('fireHeightValue').textContent = controls.height.value;
+                    }
+                    if (controls.turbulence) {
+                        turbulenceAmount = parseFloat(controls.turbulence.value);
+                        document.getElementById('fireTurbulenceValue').textContent = controls.turbulence.value;
+                    }
+                    if (controls.speed) {
+                        animationSpeed = parseFloat(controls.speed.value);
+                        document.getElementById('fireSpeedValue').textContent = controls.speed.value;
+                    }
+                    if (controls.flicker) {
+                        flickerAmount = parseFloat(controls.flicker.value);
+                        document.getElementById('fireFlickerValue').textContent = controls.flicker.value;
+                    }
+                }
+                
+                Object.values(controls).forEach(control => {
+                    if (control) control.addEventListener('input', updateControls);
+                });
+                
+                render();
+                console.log('Fire demo initialized');
+            },
+
+            waves: function() {
+                const result = initCanvas('waveCanvas');
+                if (!result) return;
+                
+                const { canvas, gl } = result;
+                
+                // Vertex shader for wave lines
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    attribute float a_lineIndex;
+                    
+                    uniform float u_time;
+                    uniform float u_amplitude;
+                    uniform float u_frequency;
+                    uniform float u_speed;
+                    uniform int u_waveType;
+                    uniform float u_width;
+                    uniform float u_height;
+                    
+                    varying vec3 v_color;
+                    
+                    float getWaveHeight(float x, float time, int waveType) {
+                        float wave = 0.0;
+                        
+                        if (waveType == 0) { // Sine wave
+                            wave = sin(x * u_frequency + time * u_speed);
+                        } else if (waveType == 1) { // Cosine wave
+                            wave = cos(x * u_frequency + time * u_speed);
+                        } else if (waveType == 2) { // Combined waves
+                            wave = sin(x * u_frequency + time * u_speed) + 
+                                   0.5 * sin(x * u_frequency * 2.0 + time * u_speed * 1.5);
+                        } else if (waveType == 3) { // Water ripples
+                            float dist = abs(x - 0.5);
+                            wave = sin(dist * u_frequency * 10.0 - time * u_speed * 3.0) * 
+                                   exp(-dist * 2.0);
+                        } else if (waveType == 4) { // Interference pattern
+                            wave = sin(x * u_frequency + time * u_speed) + 
+                                   sin(x * u_frequency * 1.3 + time * u_speed * 0.7);
+                        } else if (waveType == 5) { // Standing wave
+                            wave = sin(x * u_frequency) * cos(time * u_speed);
+                        }
+                        
+                        return wave * u_amplitude;
+                    }
+                    
+                    void main() {
+                        vec2 position = a_position;
+                        
+                        // Convert to normalized coordinates (-1 to 1)
+                        float x = (position.x / u_width) * 2.0 - 1.0;
+                        
+                        // Calculate wave height
+                        float waveHeight = getWaveHeight(position.x / u_width, u_time, u_waveType);
+                        
+                        // Apply wave displacement to Y coordinate with increased scaling
+                        float y = position.y + waveHeight * u_height * 0.4;
+                        
+                        // Convert to clip space
+                        y = (y / u_height) * 2.0 - 1.0;
+                        
+                        gl_Position = vec4(x, y, 0.0, 1.0);
+                        
+                        // Color based on wave height and position
+                        float intensity = (waveHeight / u_amplitude + 1.0) * 0.5;
+                        float hue = position.x / u_width;
+                        
+                        v_color = vec3(
+                            0.5 + 0.5 * sin(hue * 6.28 + u_time),
+                            0.5 + 0.5 * sin(hue * 6.28 + u_time + 2.09),
+                            0.5 + 0.5 * sin(hue * 6.28 + u_time + 4.18)
+                        ) * (0.6 + 0.4 * intensity);
+                    }
+                `;
+                
+                // Fragment shader
+                const fragmentShaderSource = `
+                    precision mediump float;
+                    
+                    varying vec3 v_color;
+                    
+                    void main() {
+                        gl_FragColor = vec4(v_color, 1.0);
+                    }
+                `;
+                
+                const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+                const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+                
+                if (!vertexShader || !fragmentShader) {
+                    showError(canvas, 'Shader compilation failed');
+                    return;
+                }
+                
+                const program = createProgram(gl, vertexShader, fragmentShader);
+                if (!program) {
+                    showError(canvas, 'Program linking failed');
+                    return;
+                }
+                
+                // Get locations
+                const positionLocation = gl.getAttribLocation(program, 'a_position');
+                const lineIndexLocation = gl.getAttribLocation(program, 'a_lineIndex');
+                const timeLocation = gl.getUniformLocation(program, 'u_time');
+                const amplitudeLocation = gl.getUniformLocation(program, 'u_amplitude');
+                const frequencyLocation = gl.getUniformLocation(program, 'u_frequency');
+                const speedLocation = gl.getUniformLocation(program, 'u_speed');
+                const waveTypeLocation = gl.getUniformLocation(program, 'u_waveType');
+                const widthLocation = gl.getUniformLocation(program, 'u_width');
+                const heightLocation = gl.getUniformLocation(program, 'u_height');
+                
+                // Animation variables
+                let startTime = Date.now();
+                let amplitude = 0.8;
+                let frequency = 2.0;
+                let speed = 1.0;
+                let lineCount = 60;
+                let waveType = 0;
+                let visualMode = 'lines';
+                
+                // Create geometry based on visualization mode
+                function createGeometry() {
+                    const vertices = [];
+                    const indices = [];
+                    
+                    if (visualMode === 'lines' || visualMode === 'both') {
+                        // Create vertical lines
+                        for (let i = 0; i < lineCount; i++) {
+                            const x = (i / (lineCount - 1)) * canvas.width;
+                            const baseY = canvas.height * 0.5;
+                            
+                            // Bottom point
+                            vertices.push(x, baseY - canvas.height * 0.3, i);
+                            // Top point  
+                            vertices.push(x, baseY + canvas.height * 0.3, i);
+                            
+                            const baseIndex = i * 2;
+                            indices.push(baseIndex, baseIndex + 1);
+                        }
+                    }
+                    
+                    if (visualMode === 'curve' || visualMode === 'both') {
+                        // Create continuous curve
+                        const curvePoints = 200;
+                        const baseIndex = visualMode === 'both' ? lineCount * 2 : 0;
+                        
+                        for (let i = 0; i < curvePoints; i++) {
+                            const x = (i / (curvePoints - 1)) * canvas.width;
+                            const y = canvas.height * 0.5;
+                            
+                            vertices.push(x, y, i);
+                            
+                            if (i > 0) {
+                                indices.push(baseIndex + i - 1, baseIndex + i);
+                            }
+                        }
+                    }
+                    
+                    return { vertices: new Float32Array(vertices), indices: new Uint16Array(indices) };
+                }
+                
+                let geometry = createGeometry();
+                
+                // Create buffers
+                const vertexBuffer = gl.createBuffer();
+                const indexBuffer = gl.createBuffer();
+                
+                function updateBuffers() {
+                    geometry = createGeometry();
+                    
+                    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+                    gl.bufferData(gl.ARRAY_BUFFER, geometry.vertices, gl.DYNAMIC_DRAW);
+                    
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.DYNAMIC_DRAW);
+                }
+                
+                updateBuffers();
+                
+                function render() {
+                    const currentTime = (Date.now() - startTime) * 0.001;
+                    
+                    gl.viewport(0, 0, canvas.width, canvas.height);
+                    gl.clearColor(0.02, 0.02, 0.1, 1.0);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    
+                    gl.useProgram(program);
+                    
+                    // Set uniforms
+                    gl.uniform1f(timeLocation, currentTime);
+                    gl.uniform1f(amplitudeLocation, amplitude);
+                    gl.uniform1f(frequencyLocation, frequency);
+                    gl.uniform1f(speedLocation, speed);
+                    gl.uniform1i(waveTypeLocation, waveType);
+                    gl.uniform1f(widthLocation, canvas.width);
+                    gl.uniform1f(heightLocation, canvas.height);
+                    
+                    // Set up attributes
+                    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                    
+                    gl.enableVertexAttribArray(positionLocation);
+                    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 12, 0);
+                    
+                    gl.enableVertexAttribArray(lineIndexLocation);
+                    gl.vertexAttribPointer(lineIndexLocation, 1, gl.FLOAT, false, 12, 8);
+                    
+                    // Set line width for better visibility
+                    gl.lineWidth(2.0);
+                    
+                    // Draw
+                    gl.drawElements(gl.LINES, geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+                    
+                    requestAnimationFrame(render);
+                }
+                
+                // Controls
+                const controls = {
+                    height: document.getElementById('waveHeight'),
+                    frequency: document.getElementById('waveFrequency'),
+                    speed: document.getElementById('waveSpeed'),
+                    type: document.getElementById('waveType'),
+                    visualMode: document.getElementById('waveVisualMode')
+                };
+                
+                function updateControls() {
+                    if (controls.height) {
+                        amplitude = parseFloat(controls.height.value);
+                        document.getElementById('waveHeightValue').textContent = controls.height.value;
+                    }
+                    if (controls.frequency) {
+                        frequency = parseFloat(controls.frequency.value);
+                        document.getElementById('waveFrequencyValue').textContent = controls.frequency.value;
+                    }
+                    if (controls.speed) {
+                        speed = parseFloat(controls.speed.value);
+                        document.getElementById('waveSpeedValue').textContent = controls.speed.value;
+                    }
+                    if (controls.type) {
+                        const typeMap = {
+                            'sine': 0,
+                            'cosine': 1,
+                            'combined': 2,
+                            'ripple': 3,
+                            'interference': 4,
+                            'standing': 5
+                        };
+                        waveType = typeMap[controls.type.value] || 0;
+                    }
+                    if (controls.visualMode) {
+                        visualMode = controls.visualMode.value;
+                        updateBuffers();
+                    }
+                }
+                
+                Object.values(controls).forEach(control => {
+                    if (control) control.addEventListener('input', updateControls);
+                });
+                
+                render();
+                console.log('Wave demo initialized');
+            },
+
+            fbm: function() {
+                const result = initCanvas('fbmCanvas');
+                if (!result) return;
+                
+                const { canvas, gl } = result;
+                
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    attribute vec2 a_texCoord;
+                    varying vec2 vTexCoord;
+                    
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                        vTexCoord = a_texCoord;
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision mediump float;
+                    varying vec2 vTexCoord;
+                    uniform float time;
+                    uniform int octaves;
+                    uniform float frequency;
+                    uniform float amplitude;
+                    
+                    float noise(vec2 p) {
+                        return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+                    }
+                    
+                    float smoothNoise(vec2 p) {
+                        vec2 i = floor(p);
+                        vec2 f = fract(p);
+                        
+                        float a = noise(i);
+                        float b = noise(i + vec2(1.0, 0.0));
+                        float c = noise(i + vec2(0.0, 1.0));
+                        float d = noise(i + vec2(1.0, 1.0));
+                        
+                        vec2 u = f * f * (3.0 - 2.0 * f);
+                        
+                        return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+                    }
+                    
+                    float fbm(vec2 p) {
+                        float value = 0.0;
+                        float currentAmplitude = amplitude;
+                        float currentFrequency = frequency;
+                        
+                        for(int i = 0; i < 8; i++) {
+                            if(i >= octaves) break;
+                            
+                            value += currentAmplitude * smoothNoise(p * currentFrequency + time * 0.1);
+                            currentAmplitude *= 0.5;
+                            currentFrequency *= 2.0;
+                        }
+                        
+                        return value;
+                    }
+                    
+                    void main() {
+                        vec2 uv = vTexCoord;
+                        float pattern = fbm(uv * 4.0);
+                        
+                        vec3 color1 = vec3(0.1, 0.3, 0.8);
+                        vec3 color2 = vec3(1.0, 1.0, 1.0);
+                        vec3 color3 = vec3(0.8, 0.8, 0.9);
+                        
+                        vec3 finalColor;
+                        if(pattern < 0.3) {
+                            finalColor = mix(color1, color2, pattern / 0.3);
+                        } else {
+                            finalColor = mix(color2, color3, (pattern - 0.3) / 0.7);
+                        }
+                        
+                        gl_FragColor = vec4(finalColor, 1.0);
+                    }
+                `;
+                
+                const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+                const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+                
+                if (!vertexShader || !fragmentShader) {
+                    showError(canvas, 'Shader compilation failed');
+                    return;
+                }
+                
+                const program = createProgram(gl, vertexShader, fragmentShader);
+                if (!program) {
+                    showError(canvas, 'Program linking failed');
+                    return;
+                }
+                
+                const buffer = setupQuad(gl);
+                
+                const positionLocation = gl.getAttribLocation(program, 'a_position');
+                const texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
+                const timeLocation = gl.getUniformLocation(program, 'time');
+                const octavesLocation = gl.getUniformLocation(program, 'octaves');
+                const frequencyLocation = gl.getUniformLocation(program, 'frequency');
+                const amplitudeLocation = gl.getUniformLocation(program, 'amplitude');
+                
+                let startTime = Date.now();
+                let animationSpeed = 1.0;
+                let octaves = 4;
+                let frequency = 2.0;
+                let amplitude = 1.0;
+                
+                function render() {
+                    const currentTime = (Date.now() - startTime) * 0.001 * animationSpeed;
+                    
+                    gl.clearColor(0, 0, 0, 1);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    
+                    gl.useProgram(program);
+                    
+                    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                    gl.enableVertexAttribArray(positionLocation);
+                    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 16, 0);
+                    gl.enableVertexAttribArray(texCoordLocation);
+                    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 16, 8);
+                    
+                    gl.uniform1f(timeLocation, currentTime);
+                    gl.uniform1i(octavesLocation, octaves);
+                    gl.uniform1f(frequencyLocation, frequency);
+                    gl.uniform1f(amplitudeLocation, amplitude);
+                    
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                    
+                    requestAnimationFrame(render);
+                }
+                
+                // Controls
+                const controls = {
+                    octaves: document.getElementById('fbmOctaves'),
+                    frequency: document.getElementById('fbmFrequency'),
+                    amplitude: document.getElementById('fbmAmplitude'),
+                    speed: document.getElementById('fbmSpeed')
+                };
+                
+                function updateControls() {
+                    if (controls.octaves) {
+                        octaves = parseInt(controls.octaves.value);
+                        document.getElementById('fbmOctavesValue').textContent = octaves;
+                    }
+                    if (controls.frequency) {
+                        frequency = parseFloat(controls.frequency.value);
+                        document.getElementById('fbmFrequencyValue').textContent = frequency.toFixed(1);
+                    }
+                    if (controls.amplitude) {
+                        amplitude = parseFloat(controls.amplitude.value);
+                        document.getElementById('fbmAmplitudeValue').textContent = amplitude.toFixed(1);
+                    }
+                    if (controls.speed) {
+                        animationSpeed = parseFloat(controls.speed.value);
+                        document.getElementById('fbmSpeedValue').textContent = animationSpeed.toFixed(1);
+                    }
+                }
+                
+                Object.values(controls).forEach(control => {
+                    if (control) control.addEventListener('input', updateControls);
+                });
+                
+                render();
+                console.log('FBM demo initialized');
+            },
+
+            particles: function() {
+                const result = initCanvas('particleCanvas');
+                if (!result) return;
+                
+                const { canvas, gl } = result;
+                
+                const vertexShaderSource = `
+                    attribute vec2 a_position;
+                    attribute vec2 a_texCoord;
+                    varying vec2 vTexCoord;
+                    
+                    void main() {
+                        gl_Position = vec4(a_position, 0.0, 1.0);
+                        vTexCoord = a_texCoord;
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision mediump float;
+                    varying vec2 vTexCoord;
+                    uniform float time;
+                    uniform float particleCount;
+                    uniform float particleSize;
+                    uniform float particleSpeed;
+                    uniform float gravity;
+                    
+                    float hash(vec2 p) {
+                        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+                    }
+                    
+                    vec4 getParticle(float id) {
+                        vec2 seed = vec2(id, id * 0.1);
+                        
+                        float x = hash(seed) * 2.0 - 1.0;
+                        float y = hash(seed + vec2(1.0, 0.0)) * 2.0 - 1.0;
+                        
+                        float vx = (hash(seed + vec2(2.0, 0.0)) - 0.5) * 0.5;
+                        float vy = hash(seed + vec2(3.0, 0.0)) * 0.5 + 0.5;
+                        
+                        return vec4(x, y, vx, vy);
+                    }
+                    
+                    void main() {
+                        vec2 uv = vTexCoord * 2.0 - 1.0;
+                        vec3 color = vec3(0.0);
+                        
+                        for(float i = 0.0; i < 100.0; i++) {
+                            if(i >= particleCount) break;
+                            
+                            vec4 particle = getParticle(i);
+                            vec2 pos = particle.xy;
+                            vec2 vel = particle.zw;
+                            
+                            // Apply gravity
+                            vel.y += gravity * time;
+                            pos += vel * time * particleSpeed;
+                            
+                            // Wrap particles
+                            pos.y = mod(pos.y + 1.0, 2.0) - 1.0;
+                            
+                            float dist = distance(uv, pos);
+                            float intensity = 1.0 / (1.0 + dist * 20.0 / particleSize);
+                            intensity = smoothstep(0.0, 1.0, intensity);
+                            
+                            vec3 particleColor = vec3(
+                                0.5 + 0.5 * sin(i * 0.1 + time),
+                                0.5 + 0.5 * sin(i * 0.2 + time + 2.0),
+                                0.5 + 0.5 * sin(i * 0.3 + time + 4.0)
+                            );
+                            
+                            color += particleColor * intensity;
+                        }
+                        
+                        color += vec3(0.1, 0.1, 0.2) * (1.0 - length(uv) * 0.5);
+                        
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `;
+                
+                const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+                const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+                
+                if (!vertexShader || !fragmentShader) {
+                    showError(canvas, 'Shader compilation failed');
+                    return;
+                }
+                
+                const program = createProgram(gl, vertexShader, fragmentShader);
+                if (!program) {
+                    showError(canvas, 'Program linking failed');
+                    return;
+                }
+                
+                const buffer = setupQuad(gl);
+                
+                const positionLocation = gl.getAttribLocation(program, 'a_position');
+                const texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
+                const timeLocation = gl.getUniformLocation(program, 'time');
+                const particleCountLocation = gl.getUniformLocation(program, 'particleCount');
+                const particleSizeLocation = gl.getUniformLocation(program, 'particleSize');
+                const particleSpeedLocation = gl.getUniformLocation(program, 'particleSpeed');
+                const gravityLocation = gl.getUniformLocation(program, 'gravity');
+                
+                let startTime = Date.now();
+                let particleCount = 50.0;
+                let particleSize = 1.5;
+                let particleSpeed = 0.5;
+                let gravity = 0.2;
+                
+                function render() {
+                    const currentTime = (Date.now() - startTime) * 0.001;
+                    
+                    gl.enable(gl.BLEND);
+                    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+                    gl.clearColor(0, 0, 0, 1);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    
+                    gl.useProgram(program);
+                    
+                    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                    gl.enableVertexAttribArray(positionLocation);
+                    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 16, 0);
+                    gl.enableVertexAttribArray(texCoordLocation);
+                    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 16, 8);
+                    
+                    gl.uniform1f(timeLocation, currentTime);
+                    gl.uniform1f(particleCountLocation, particleCount);
+                    gl.uniform1f(particleSizeLocation, particleSize);
+                    gl.uniform1f(particleSpeedLocation, particleSpeed);
+                    gl.uniform1f(gravityLocation, gravity);
+                    
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                    
+                    requestAnimationFrame(render);
+                }
+                
+                // Controls
+                const controls = {
+                    count: document.getElementById('particleCount'),
+                    size: document.getElementById('particleSize'),
+                    speed: document.getElementById('particleSpeed'),
+                    gravity: document.getElementById('particleGravity')
+                };
+                
+                function updateControls() {
+                    if (controls.count) {
+                        particleCount = parseFloat(controls.count.value);
+                        document.getElementById('particleCountValue').textContent = particleCount;
+                    }
+                    if (controls.size) {
+                        particleSize = parseFloat(controls.size.value);
+                        document.getElementById('particleSizeValue').textContent = particleSize.toFixed(1);
+                    }
+                    if (controls.speed) {
+                        particleSpeed = parseFloat(controls.speed.value);
+                        document.getElementById('particleSpeedValue').textContent = particleSpeed.toFixed(1);
+                    }
+                    if (controls.gravity) {
+                        gravity = parseFloat(controls.gravity.value);
+                        document.getElementById('particleGravityValue').textContent = gravity.toFixed(1);
+                    }
+                }
+                
+                Object.values(controls).forEach(control => {
+                    if (control) control.addEventListener('input', updateControls);
+                });
+                
+                render();
+                console.log('Particle demo initialized');
+            },
+
+            '3d': function() {
+                // Initialize all 3D demos
+                initCubeDemo();
+                initSphereDemo();
+                initTerrainDemo();
+                console.log('3D demos initialized');
+            }
+        };
+
+        // 3D Matrix Math Utilities
+        function createMatrix4() {
+            return new Float32Array(16);
+        }
+
+        function identity(out) {
+            out[0] = 1; out[1] = 0; out[2] = 0; out[3] = 0;
+            out[4] = 0; out[5] = 1; out[6] = 0; out[7] = 0;
+            out[8] = 0; out[9] = 0; out[10] = 1; out[11] = 0;
+            out[12] = 0; out[13] = 0; out[14] = 0; out[15] = 1;
+            return out;
+        }
+
+        function perspective(out, fovy, aspect, near, far) {
+            const f = 1.0 / Math.tan(fovy / 2);
+            const nf = 1 / (near - far);
+            
+            out[0] = f / aspect; out[1] = 0; out[2] = 0; out[3] = 0;
+            out[4] = 0; out[5] = f; out[6] = 0; out[7] = 0;
+            out[8] = 0; out[9] = 0; out[10] = (far + near) * nf; out[11] = -1;
+            out[12] = 0; out[13] = 0; out[14] = 2 * far * near * nf; out[15] = 0;
+            return out;
+        }
+
+        function lookAt(out, eye, center, up) {
+            const eyex = eye[0], eyey = eye[1], eyez = eye[2];
+            const upx = up[0], upy = up[1], upz = up[2];
+            const centerx = center[0], centery = center[1], centerz = center[2];
+            
+            let z0 = eyex - centerx, z1 = eyey - centery, z2 = eyez - centerz;
+            let len = 1 / Math.sqrt(z0 * z0 + z1 * z1 + z2 * z2);
+            z0 *= len; z1 *= len; z2 *= len;
+            
+            let x0 = upy * z2 - upz * z1, x1 = upz * z0 - upx * z2, x2 = upx * z1 - upy * z0;
+            len = Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+            if (!len) { x0 = 0; x1 = 0; x2 = 0; } else { len = 1 / len; x0 *= len; x1 *= len; x2 *= len; }
+            
+            let y0 = z1 * x2 - z2 * x1, y1 = z2 * x0 - z0 * x2, y2 = z0 * x1 - z1 * x0;
+            len = Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
+            if (!len) { y0 = 0; y1 = 0; y2 = 0; } else { len = 1 / len; y0 *= len; y1 *= len; y2 *= len; }
+            
+            out[0] = x0; out[1] = y0; out[2] = z0; out[3] = 0;
+            out[4] = x1; out[5] = y1; out[6] = z1; out[7] = 0;
+            out[8] = x2; out[9] = y2; out[10] = z2; out[11] = 0;
+            out[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
+            out[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
+            out[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
+            out[15] = 1;
+            return out;
+        }
+
+        function rotateY(out, a, rad) {
+            const s = Math.sin(rad), c = Math.cos(rad);
+            const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
+            const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+            
+            out[0] = a00 * c - a20 * s; out[1] = a01; out[2] = a02; out[3] = a03;
+            out[4] = a[4]; out[5] = a[5]; out[6] = a[6]; out[7] = a[7];
+            out[8] = a00 * s + a20 * c; out[9] = a21; out[10] = a22; out[11] = a23;
+            out[12] = a[12]; out[13] = a[13]; out[14] = a[14]; out[15] = a[15];
+            return out;
+        }
+
+        function rotateX(out, a, rad) {
+            const s = Math.sin(rad), c = Math.cos(rad);
+            const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
+            const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+            
+            out[0] = a[0]; out[1] = a[1]; out[2] = a[2]; out[3] = a[3];
+            out[4] = a10 * c + a20 * s; out[5] = a11 * c + a21 * s; out[6] = a12 * c + a22 * s; out[7] = a13 * c + a23 * s;
+            out[8] = a20 * c - a10 * s; out[9] = a21 * c - a11 * s; out[10] = a22 * c - a12 * s; out[11] = a23 * c - a13 * s;
+            out[12] = a[12]; out[13] = a[13]; out[14] = a[14]; out[15] = a[15];
+            return out;
+        }
+
+        // 3D Demo Implementations
+        function initCubeDemo() {
+            const result = initCanvas('cubeCanvas');
+            if (!result) return;
+            
+            const { canvas, gl } = result;
+            gl.enable(gl.DEPTH_TEST);
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(gl.BACK);
+            
+            const vertexShaderSource = `
+                attribute vec3 a_position;
+                attribute vec3 a_normal;
+                attribute vec3 a_color;
+                
+                uniform mat4 u_modelMatrix;
+                uniform mat4 u_viewMatrix;
+                uniform mat4 u_projectionMatrix;
+                uniform mat4 u_normalMatrix;
+                
+                varying vec3 v_position;
+                varying vec3 v_normal;
+                varying vec3 v_color;
+                
+                void main() {
+                    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);
+                    vec4 viewPosition = u_viewMatrix * worldPosition;
+                    gl_Position = u_projectionMatrix * viewPosition;
+                    
+                    v_position = worldPosition.xyz;
+                    v_normal = (u_normalMatrix * vec4(a_normal, 0.0)).xyz;
+                    v_color = a_color;
+                }
+            `;
+            
+            const fragmentShaderSource = `
+                precision mediump float;
+                
+                varying vec3 v_position;
+                varying vec3 v_normal;
+                varying vec3 v_color;
+                
+                uniform vec3 u_lightPosition;
+                uniform vec3 u_viewPosition;
+                
+                void main() {
+                    vec3 normal = normalize(v_normal);
+                    vec3 lightDir = normalize(u_lightPosition - v_position);
+                    vec3 viewDir = normalize(u_viewPosition - v_position);
+                    vec3 reflectDir = reflect(-lightDir, normal);
+                    
+                    // Ambient
+                    vec3 ambient = 0.3 * v_color;
+                    
+                    // Diffuse
+                    float diff = max(dot(normal, lightDir), 0.0);
+                    vec3 diffuse = diff * v_color;
+                    
+                    // Specular
+                    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+                    vec3 specular = spec * vec3(0.3, 0.3, 0.3);
+                    
+                    vec3 result = ambient + diffuse + specular;
+                    gl_FragColor = vec4(result, 1.0);
+                }
+            `;
+            
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+            
+            if (!vertexShader || !fragmentShader) {
+                showError(canvas, 'Shader compilation failed');
+                return;
+            }
+            
+            const program = createProgram(gl, vertexShader, fragmentShader);
+            if (!program) {
+                showError(canvas, 'Program linking failed');
+                return;
+            }
+            
+            // Cube vertices with normals and colors (position + normal + color)
+            const vertices = new Float32Array([
+                // Front face (red) - Normal: (0, 0, 1)
+                -1, -1,  1,  0, 0, 1,  1, 0, 0,
+                 1, -1,  1,  0, 0, 1,  1, 0, 0,
+                 1,  1,  1,  0, 0, 1,  1, 0, 0,
+                -1, -1,  1,  0, 0, 1,  1, 0, 0,
+                 1,  1,  1,  0, 0, 1,  1, 0, 0,
+                -1,  1,  1,  0, 0, 1,  1, 0, 0,
+                
+                // Back face (green) - Normal: (0, 0, -1)
+                -1, -1, -1,  0, 0, -1,  0, 1, 0,
+                -1,  1, -1,  0, 0, -1,  0, 1, 0,
+                 1,  1, -1,  0, 0, -1,  0, 1, 0,
+                -1, -1, -1,  0, 0, -1,  0, 1, 0,
+                 1,  1, -1,  0, 0, -1,  0, 1, 0,
+                 1, -1, -1,  0, 0, -1,  0, 1, 0,
+                
+                // Top face (blue) - Normal: (0, 1, 0)
+                -1,  1, -1,  0, 1, 0,  0, 0, 1,
+                -1,  1,  1,  0, 1, 0,  0, 0, 1,
+                 1,  1,  1,  0, 1, 0,  0, 0, 1,
+                -1,  1, -1,  0, 1, 0,  0, 0, 1,
+                 1,  1,  1,  0, 1, 0,  0, 0, 1,
+                 1,  1, -1,  0, 1, 0,  0, 0, 1,
+                
+                // Bottom face (yellow) - Normal: (0, -1, 0)
+                -1, -1, -1,  0, -1, 0,  1, 1, 0,
+                 1, -1, -1,  0, -1, 0,  1, 1, 0,
+                 1, -1,  1,  0, -1, 0,  1, 1, 0,
+                -1, -1, -1,  0, -1, 0,  1, 1, 0,
+                 1, -1,  1,  0, -1, 0,  1, 1, 0,
+                -1, -1,  1,  0, -1, 0,  1, 1, 0,
+                
+                // Right face (magenta) - Normal: (1, 0, 0)
+                 1, -1, -1,  1, 0, 0,  1, 0, 1,
+                 1,  1, -1,  1, 0, 0,  1, 0, 1,
+                 1,  1,  1,  1, 0, 0,  1, 0, 1,
+                 1, -1, -1,  1, 0, 0,  1, 0, 1,
+                 1,  1,  1,  1, 0, 0,  1, 0, 1,
+                 1, -1,  1,  1, 0, 0,  1, 0, 1,
+                
+                // Left face (cyan) - Normal: (-1, 0, 0)
+                -1, -1, -1,  -1, 0, 0,  0, 1, 1,
+                -1, -1,  1,  -1, 0, 0,  0, 1, 1,
+                -1,  1,  1,  -1, 0, 0,  0, 1, 1,
+                -1, -1, -1,  -1, 0, 0,  0, 1, 1,
+                -1,  1,  1,  -1, 0, 0,  0, 1, 1,
+                -1,  1, -1,  -1, 0, 0,  0, 1, 1
+            ]);
+            
+            const buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+            
+            const positionLocation = gl.getAttribLocation(program, 'a_position');
+            const normalLocation = gl.getAttribLocation(program, 'a_normal');
+            const colorLocation = gl.getAttribLocation(program, 'a_color');
+            const modelMatrixLocation = gl.getUniformLocation(program, 'u_modelMatrix');
+            const viewMatrixLocation = gl.getUniformLocation(program, 'u_viewMatrix');
+            const projectionMatrixLocation = gl.getUniformLocation(program, 'u_projectionMatrix');
+            const normalMatrixLocation = gl.getUniformLocation(program, 'u_normalMatrix');
+            const lightPositionLocation = gl.getUniformLocation(program, 'u_lightPosition');
+            const viewPositionLocation = gl.getUniformLocation(program, 'u_viewPosition');
+            
+            let startTime = Date.now();
+            let rotationSpeedX = 1.0;
+            let rotationSpeedY = 0.5;
+            let cameraDistance = 4.0;
+            let wireframe = false;
+            
+            function render() {
+                const currentTime = (Date.now() - startTime) * 0.001;
+                
+                gl.clearColor(1, 1, 1, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                
+                gl.useProgram(program);
+                
+                // Model matrix (rotation)
+                const modelMatrix = createMatrix4();
+                identity(modelMatrix);
+                rotateY(modelMatrix, modelMatrix, currentTime * rotationSpeedY);
+                rotateX(modelMatrix, modelMatrix, currentTime * rotationSpeedX);
+                
+                // View matrix (camera)
+                const viewMatrix = createMatrix4();
+                lookAt(viewMatrix, [0, 0, cameraDistance], [0, 0, 0], [0, 1, 0]);
+                
+                // Projection matrix
+                const projectionMatrix = createMatrix4();
+                perspective(projectionMatrix, Math.PI / 4, canvas.width / canvas.height, 0.1, 100.0);
+                
+                // Normal matrix (inverse transpose of model matrix - simplified for uniform scaling)
+                const normalMatrix = createMatrix4();
+                identity(normalMatrix);
+                rotateY(normalMatrix, normalMatrix, currentTime * rotationSpeedY);
+                rotateX(normalMatrix, normalMatrix, currentTime * rotationSpeedX);
+                
+                // Camera position
+                const cameraPos = [0, 0, cameraDistance];
+                
+                gl.uniformMatrix4fv(modelMatrixLocation, false, modelMatrix);
+                gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
+                gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
+                gl.uniformMatrix4fv(normalMatrixLocation, false, normalMatrix);
+                gl.uniform3fv(lightPositionLocation, [2.0, 2.0, 2.0]);
+                gl.uniform3fv(viewPositionLocation, cameraPos);
+                
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                gl.enableVertexAttribArray(positionLocation);
+                gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 36, 0);
+                gl.enableVertexAttribArray(normalLocation);
+                gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 36, 12);
+                gl.enableVertexAttribArray(colorLocation);
+                gl.vertexAttribPointer(colorLocation, 3, gl.FLOAT, false, 36, 24);
+                
+                gl.drawArrays(wireframe ? gl.LINES : gl.TRIANGLES, 0, 36);
+                
+                requestAnimationFrame(render);
+            }
+            
+            // Controls
+            const controls = {
+                rotationX: document.getElementById('cubeRotationX'),
+                rotationY: document.getElementById('cubeRotationY'),
+                distance: document.getElementById('cubeCameraDistance'),
+                wireframe: document.getElementById('cubeWireframe')
+            };
+            
+            function updateControls() {
+                if (controls.rotationX) {
+                    rotationSpeedX = parseFloat(controls.rotationX.value);
+                    document.getElementById('cubeRotationXValue').textContent = rotationSpeedX.toFixed(1);
+                }
+                if (controls.rotationY) {
+                    rotationSpeedY = parseFloat(controls.rotationY.value);
+                    document.getElementById('cubeRotationYValue').textContent = rotationSpeedY.toFixed(1);
+                }
+                if (controls.distance) {
+                    cameraDistance = parseFloat(controls.distance.value);
+                    document.getElementById('cubeCameraDistanceValue').textContent = cameraDistance.toFixed(1);
+                }
+                if (controls.wireframe) {
+                    wireframe = controls.wireframe.value === 'true';
+                }
+            }
+            
+            Object.values(controls).forEach(control => {
+                if (control) control.addEventListener('input', updateControls);
+            });
+            
+            render();
+            console.log('Cube demo initialized');
+        }
+
+        function initSphereDemo() {
+            const result = initCanvas('sphereCanvas');
+            if (!result) return;
+            
+            const { canvas, gl } = result;
+            gl.enable(gl.DEPTH_TEST);
+            
+            const vertexShaderSource = `
+                attribute vec3 a_position;
+                attribute vec3 a_normal;
+                
+                uniform mat4 u_modelMatrix;
+                uniform mat4 u_viewMatrix;
+                uniform mat4 u_projectionMatrix;
+                uniform mat4 u_normalMatrix;
+                
+                varying vec3 v_normal;
+                varying vec3 v_position;
+                varying vec3 v_worldPosition;
+                
+                void main() {
+                    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);
+                    vec4 viewPosition = u_viewMatrix * worldPosition;
+                    gl_Position = u_projectionMatrix * viewPosition;
+                    
+                    v_normal = normalize((u_normalMatrix * vec4(a_normal, 0.0)).xyz);
+                    v_position = viewPosition.xyz;
+                    v_worldPosition = worldPosition.xyz;
+                }
+            `;
+            
+            const fragmentShaderSource = `
+                precision mediump float;
+                
+                varying vec3 v_normal;
+                varying vec3 v_position;
+                varying vec3 v_worldPosition;
+                
+                uniform vec3 u_lightPosition;
+                uniform vec3 u_lightColor;
+                uniform vec3 u_ambientLight;
+                uniform vec3 u_diffuseColor;
+                uniform vec3 u_specularColor;
+                uniform float u_shininess;
+                uniform vec3 u_viewPosition;
+                
+                void main() {
+                    vec3 normal = normalize(v_normal);
+                    vec3 lightDir = normalize(u_lightPosition - v_worldPosition);
+                    vec3 viewDir = normalize(u_viewPosition - v_worldPosition);
+                    vec3 reflectDir = reflect(-lightDir, normal);
+                    
+                    // Ambient lighting
+                    vec3 ambient = u_ambientLight;
+                    
+                    // Diffuse lighting
+                    float diff = max(dot(normal, lightDir), 0.0);
+                    vec3 diffuse = diff * u_lightColor * u_diffuseColor;
+                    
+                    // Specular lighting (Phong)
+                    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_shininess);
+                    vec3 specular = spec * u_lightColor * u_specularColor;
+                    
+                    // Rim lighting for extra depth
+                    float rim = 1.0 - max(dot(viewDir, normal), 0.0);
+                    rim = smoothstep(0.6, 1.0, rim);
+                    vec3 rimColor = rim * vec3(0.3, 0.6, 1.0);
+                    
+                    vec3 result = ambient + diffuse + specular + rimColor;
+                    gl_FragColor = vec4(result, 1.0);
+                }
+            `;
+            
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+            
+            if (!vertexShader || !fragmentShader) {
+                showError(canvas, 'Shader compilation failed');
+                return;
+            }
+            
+            const program = createProgram(gl, vertexShader, fragmentShader);
+            if (!program) {
+                showError(canvas, 'Program linking failed');
+                return;
+            }
+            
+            // Generate sphere geometry
+            function generateSphere(radius, latBands, longBands) {
+                const vertices = [];
+                const indices = [];
+                
+                // Generate vertices
+                for (let lat = 0; lat <= latBands; lat++) {
+                    const theta = (lat * Math.PI) / latBands;
+                    const sinTheta = Math.sin(theta);
+                    const cosTheta = Math.cos(theta);
+                    
+                    for (let long = 0; long <= longBands; long++) {
+                        const phi = (long * 2 * Math.PI) / longBands;
+                        const sinPhi = Math.sin(phi);
+                        const cosPhi = Math.cos(phi);
+                        
+                        const x = cosPhi * sinTheta;
+                        const y = cosTheta;
+                        const z = sinPhi * sinTheta;
+                        
+                        // Position
+                        vertices.push(radius * x, radius * y, radius * z);
+                        // Normal (same as normalized position for sphere)
+                        vertices.push(x, y, z);
+                    }
+                }
+                
+                // Generate indices
+                for (let lat = 0; lat < latBands; lat++) {
+                    for (let long = 0; long < longBands; long++) {
+                        const first = lat * (longBands + 1) + long;
+                        const second = first + longBands + 1;
+                        
+                        indices.push(first, second, first + 1);
+                        indices.push(second, second + 1, first + 1);
+                    }
+                }
+                
+                return { vertices: new Float32Array(vertices), indices: new Uint16Array(indices) };
+            }
+            
+            const sphere = generateSphere(1.0, 30, 30);
+            
+            // Create vertex buffer
+            const vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, sphere.vertices, gl.STATIC_DRAW);
+            
+            // Create index buffer
+            const indexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sphere.indices, gl.STATIC_DRAW);
+            
+            // Get attribute and uniform locations
+            const positionLocation = gl.getAttribLocation(program, 'a_position');
+            const normalLocation = gl.getAttribLocation(program, 'a_normal');
+            const modelMatrixLocation = gl.getUniformLocation(program, 'u_modelMatrix');
+            const viewMatrixLocation = gl.getUniformLocation(program, 'u_viewMatrix');
+            const projectionMatrixLocation = gl.getUniformLocation(program, 'u_projectionMatrix');
+            const normalMatrixLocation = gl.getUniformLocation(program, 'u_normalMatrix');
+            const lightPositionLocation = gl.getUniformLocation(program, 'u_lightPosition');
+            const lightColorLocation = gl.getUniformLocation(program, 'u_lightColor');
+            const ambientLightLocation = gl.getUniformLocation(program, 'u_ambientLight');
+            const diffuseColorLocation = gl.getUniformLocation(program, 'u_diffuseColor');
+            const specularColorLocation = gl.getUniformLocation(program, 'u_specularColor');
+            const shininessLocation = gl.getUniformLocation(program, 'u_shininess');
+            const viewPositionLocation = gl.getUniformLocation(program, 'u_viewPosition');
+            
+            let startTime = Date.now();
+            let rotationSpeed = 0.3;
+            let lightIntensity = 1.0;
+            let shininess = 32.0;
+            let cameraDistance = 3.0;
+            let wireframe = false;
+            
+            function render() {
+                const currentTime = (Date.now() - startTime) * 0.001;
+                
+                gl.clearColor(0.1, 0.1, 0.1, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                
+                gl.useProgram(program);
+                
+                // Model matrix (rotation)
+                const modelMatrix = createMatrix4();
+                identity(modelMatrix);
+                rotateY(modelMatrix, modelMatrix, currentTime * rotationSpeed);
+                rotateX(modelMatrix, modelMatrix, currentTime * rotationSpeed * 0.7);
+                
+                // View matrix (camera)
+                const viewMatrix = createMatrix4();
+                lookAt(viewMatrix, [0, 0, cameraDistance], [0, 0, 0], [0, 1, 0]);
+                
+                // Projection matrix
+                const projectionMatrix = createMatrix4();
+                perspective(projectionMatrix, Math.PI / 4, canvas.width / canvas.height, 0.1, 100.0);
+                
+                // Normal matrix (inverse transpose of model matrix)
+                const normalMatrix = createMatrix4();
+                identity(normalMatrix);
+                rotateY(normalMatrix, normalMatrix, currentTime * rotationSpeed);
+                rotateX(normalMatrix, normalMatrix, currentTime * rotationSpeed * 0.7);
+                
+                // Set uniforms
+                gl.uniformMatrix4fv(modelMatrixLocation, false, modelMatrix);
+                gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
+                gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
+                gl.uniformMatrix4fv(normalMatrixLocation, false, normalMatrix);
+                
+                // Lighting uniforms
+                const lightPos = [2.0 * Math.cos(currentTime), 2.0, 2.0 * Math.sin(currentTime)];
+                gl.uniform3fv(lightPositionLocation, lightPos);
+                gl.uniform3f(lightColorLocation, lightIntensity, lightIntensity, lightIntensity);
+                gl.uniform3f(ambientLightLocation, 0.2, 0.2, 0.2);
+                gl.uniform3f(diffuseColorLocation, 0.8, 0.3, 0.3);
+                gl.uniform3f(specularColorLocation, 1.0, 1.0, 1.0);
+                gl.uniform1f(shininessLocation, shininess);
+                gl.uniform3f(viewPositionLocation, 0, 0, cameraDistance);
+                
+                // Set up attributes
+                gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                
+                gl.enableVertexAttribArray(positionLocation);
+                gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 24, 0);
+                
+                gl.enableVertexAttribArray(normalLocation);
+                gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 24, 12);
+                
+                // Draw sphere
+                if (wireframe) {
+                    // Disable face culling for wireframe
+                    gl.disable(gl.CULL_FACE);
+                    // Draw triangles as lines
+                    for (let i = 0; i < sphere.indices.length; i += 3) {
+                        gl.drawElements(gl.LINE_LOOP, 3, gl.UNSIGNED_SHORT, i * 2);
+                    }
+                    gl.enable(gl.CULL_FACE);
+                } else {
+                    gl.drawElements(gl.TRIANGLES, sphere.indices.length, gl.UNSIGNED_SHORT, 0);
+                }
+                
+                requestAnimationFrame(render);
+            }
+            
+            // Control handlers
+            const controls = {
+                sphereRotationSpeed: document.getElementById('sphereRotationSpeed'),
+                sphereLightIntensity: document.getElementById('sphereLightIntensity'),
+                sphereShininess: document.getElementById('sphereShininess'),
+                sphereCameraDistance: document.getElementById('sphereCameraDistance'),
+                sphereWireframe: document.getElementById('sphereWireframe')
+            };
+            
+            function updateControls() {
+                if (controls.sphereRotationSpeed) {
+                    rotationSpeed = parseFloat(controls.sphereRotationSpeed.value);
+                    document.getElementById('sphereRotationSpeedValue').textContent = rotationSpeed.toFixed(1);
+                }
+                if (controls.sphereLightIntensity) {
+                    lightIntensity = parseFloat(controls.sphereLightIntensity.value);
+                    document.getElementById('sphereLightIntensityValue').textContent = lightIntensity.toFixed(1);
+                }
+                if (controls.sphereShininess) {
+                    shininess = parseFloat(controls.sphereShininess.value);
+                    document.getElementById('sphereShininessValue').textContent = shininess.toFixed(0);
+                }
+                if (controls.sphereCameraDistance) {
+                    cameraDistance = parseFloat(controls.sphereCameraDistance.value);
+                    document.getElementById('sphereCameraDistanceValue').textContent = cameraDistance.toFixed(1);
+                }
+                if (controls.sphereWireframe) {
+                    wireframe = controls.sphereWireframe.value === 'true';
+                }
+            }
+            
+            Object.values(controls).forEach(control => {
+                if (control) control.addEventListener('input', updateControls);
+            });
+            
+            render();
+            console.log('Sphere demo initialized');
+        }
+
+        function initTerrainDemo() {
+            const result = initCanvas('terrainCanvas');
+            if (!result) return;
+            
+            const { canvas, gl } = result;
+            gl.enable(gl.DEPTH_TEST);
+            
+            const vertexShaderSource = `
+                attribute vec3 a_position;
+                
+                uniform mat4 u_modelMatrix;
+                uniform mat4 u_viewMatrix;
+                uniform mat4 u_projectionMatrix;
+                uniform float u_time;
+                uniform float u_amplitude;
+                uniform float u_frequency;
+                
+                varying vec3 v_worldPosition;
+                varying float v_height;
+                
+                // Simple noise function
+                float noise(vec2 st) {
+                    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+                }
+                
+                void main() {
+                    vec3 position = a_position;
+                    
+                    // Generate height using simple noise
+                    vec2 noiseCoord = position.xz * u_frequency;
+                    float height1 = noise(noiseCoord) * u_amplitude;
+                    float height2 = noise(noiseCoord * 2.0) * u_amplitude * 0.5;
+                    float height3 = noise(noiseCoord * 4.0) * u_amplitude * 0.25;
+                    
+                    float totalHeight = height1 + height2 + height3;
+                    
+                    // Add animated waves
+                    totalHeight += sin(position.x * 2.0 + u_time) * 0.1;
+                    totalHeight += cos(position.z * 1.5 + u_time * 0.7) * 0.08;
+                    
+                    position.y += totalHeight;
+                    v_height = totalHeight;
+                    
+                    vec4 worldPosition = u_modelMatrix * vec4(position, 1.0);
+                    vec4 viewPosition = u_viewMatrix * worldPosition;
+                    gl_Position = u_projectionMatrix * viewPosition;
+                    
+                    v_worldPosition = worldPosition.xyz;
+                }
+            `;
+            
+            const fragmentShaderSource = `
+                precision mediump float;
+                
+                varying vec3 v_worldPosition;
+                varying float v_height;
+                
+                uniform vec3 u_lightPosition;
+                uniform float u_time;
+                
+                vec3 getTerrainColor(float height) {
+                    vec3 water = vec3(0.0, 0.4, 0.8);
+                    vec3 sand = vec3(0.8, 0.7, 0.5);
+                    vec3 grass = vec3(0.2, 0.6, 0.2);
+                    vec3 rock = vec3(0.5, 0.4, 0.3);
+                    vec3 snow = vec3(0.9, 0.9, 0.95);
+                    
+                    if (height < 0.0) return water;
+                    else if (height < 0.2) return mix(sand, grass, height / 0.2);
+                    else if (height < 0.6) return mix(grass, rock, (height - 0.2) / 0.4);
+                    else return mix(rock, snow, min((height - 0.6) / 0.4, 1.0));
+                }
+                
+                void main() {
+                    // Simple lighting calculation
+                    vec3 lightDir = normalize(u_lightPosition - v_worldPosition);
+                    
+                    // Calculate normal using derivatives (approximate)
+                    vec3 normal = normalize(vec3(0.0, 1.0, 0.0));
+                    
+                    // Basic lighting
+                    vec3 ambient = vec3(0.4, 0.4, 0.5);
+                    float diff = max(dot(normal, lightDir), 0.0);
+                    vec3 diffuse = diff * vec3(1.0, 0.95, 0.8);
+                    
+                    // Get terrain color
+                    vec3 terrainColor = getTerrainColor(v_height);
+                    
+                    vec3 finalColor = (ambient + diffuse) * terrainColor;
+                    gl_FragColor = vec4(finalColor, 1.0);
+                }
+            `;
+            
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+            
+            if (!vertexShader || !fragmentShader) {
+                showError(canvas, 'Shader compilation failed');
+                return;
+            }
+            
+            const program = createProgram(gl, vertexShader, fragmentShader);
+            if (!program) {
+                showError(canvas, 'Program linking failed');
+                return;
+            }
+            
+            // Generate simple terrain grid
+            function generateTerrain(size, subdivisions) {
+                const vertices = [];
+                const indices = [];
+                
+                // Generate vertices
+                for (let y = 0; y <= subdivisions; y++) {
+                    for (let x = 0; x <= subdivisions; x++) {
+                        const xPos = (x / subdivisions - 0.5) * size;
+                        const zPos = (y / subdivisions - 0.5) * size;
+                        vertices.push(xPos, 0.0, zPos);
+                    }
+                }
+                
+                // Generate indices
+                for (let y = 0; y < subdivisions; y++) {
+                    for (let x = 0; x < subdivisions; x++) {
+                        const topLeft = y * (subdivisions + 1) + x;
+                        const topRight = topLeft + 1;
+                        const bottomLeft = topLeft + (subdivisions + 1);
+                        const bottomRight = bottomLeft + 1;
+                        
+                        indices.push(topLeft, bottomLeft, topRight);
+                        indices.push(topRight, bottomLeft, bottomRight);
+                    }
+                }
+                
+                return { vertices: new Float32Array(vertices), indices: new Uint16Array(indices) };
+            }
+            
+            const terrain = generateTerrain(6.0, 50);
+            
+            // Create buffers
+            const vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, terrain.vertices, gl.STATIC_DRAW);
+            
+            const indexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, terrain.indices, gl.STATIC_DRAW);
+            
+            // Get locations
+            const positionLocation = gl.getAttribLocation(program, 'a_position');
+            const modelMatrixLocation = gl.getUniformLocation(program, 'u_modelMatrix');
+            const viewMatrixLocation = gl.getUniformLocation(program, 'u_viewMatrix');
+            const projectionMatrixLocation = gl.getUniformLocation(program, 'u_projectionMatrix');
+            const timeLocation = gl.getUniformLocation(program, 'u_time');
+            const amplitudeLocation = gl.getUniformLocation(program, 'u_amplitude');
+            const frequencyLocation = gl.getUniformLocation(program, 'u_frequency');
+            const lightPositionLocation = gl.getUniformLocation(program, 'u_lightPosition');
+            
+            let startTime = Date.now();
+            let amplitude = 0.5;
+            let frequency = 2.0;
+            let cameraDistance = 4.0;
+            let animationSpeed = 1.0;
+            let wireframe = false;
+            
+            function render() {
+                const currentTime = (Date.now() - startTime) * 0.001 * animationSpeed;
+                
+                gl.clearColor(0.7, 0.8, 0.9, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                
+                gl.useProgram(program);
+                
+                // Matrices
+                const modelMatrix = createMatrix4();
+                identity(modelMatrix);
+                
+                const cameraX = Math.cos(currentTime * 0.3) * cameraDistance;
+                const cameraZ = Math.sin(currentTime * 0.3) * cameraDistance;
+                const viewMatrix = createMatrix4();
+                lookAt(viewMatrix, [cameraX, 3.0, cameraZ], [0, 0, 0], [0, 1, 0]);
+                
+                const projectionMatrix = createMatrix4();
+                perspective(projectionMatrix, Math.PI / 4, canvas.width / canvas.height, 0.1, 100.0);
+                
+                // Set uniforms
+                gl.uniformMatrix4fv(modelMatrixLocation, false, modelMatrix);
+                gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
+                gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
+                gl.uniform1f(timeLocation, currentTime);
+                gl.uniform1f(amplitudeLocation, amplitude);
+                gl.uniform1f(frequencyLocation, frequency);
+                gl.uniform3f(lightPositionLocation, 3.0, 5.0, 3.0);
+                
+                // Set up attributes
+                gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                
+                gl.enableVertexAttribArray(positionLocation);
+                gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 12, 0);
+                
+                // Draw
+                if (wireframe) {
+                    // Draw as wireframe lines
+                    gl.disable(gl.CULL_FACE);
+                    for (let i = 0; i < terrain.indices.length; i += 3) {
+                        gl.drawElements(gl.LINE_LOOP, 3, gl.UNSIGNED_SHORT, i * 2);
+                    }
+                    gl.enable(gl.CULL_FACE);
+                } else {
+                    gl.drawElements(gl.TRIANGLES, terrain.indices.length, gl.UNSIGNED_SHORT, 0);
+                }
+                
+                requestAnimationFrame(render);
+            }
+            
+            // Controls
+            const controls = {
+                terrainAmplitude: document.getElementById('terrainAmplitude'),
+                terrainFrequency: document.getElementById('terrainFrequency'),
+                terrainCameraDistance: document.getElementById('terrainCameraDistance'),
+                terrainAnimationSpeed: document.getElementById('terrainAnimationSpeed'),
+                terrainWireframe: document.getElementById('terrainWireframe')
+            };
+            
+            function updateControls() {
+                if (controls.terrainAmplitude) {
+                    amplitude = parseFloat(controls.terrainAmplitude.value);
+                    document.getElementById('terrainAmplitudeValue').textContent = amplitude.toFixed(1);
+                }
+                if (controls.terrainFrequency) {
+                    frequency = parseFloat(controls.terrainFrequency.value);
+                    document.getElementById('terrainFrequencyValue').textContent = frequency.toFixed(1);
+                }
+                if (controls.terrainCameraDistance) {
+                    cameraDistance = parseFloat(controls.terrainCameraDistance.value);
+                    document.getElementById('terrainCameraDistanceValue').textContent = cameraDistance.toFixed(1);
+                }
+                if (controls.terrainAnimationSpeed) {
+                    animationSpeed = parseFloat(controls.terrainAnimationSpeed.value);
+                    document.getElementById('terrainAnimationSpeedValue').textContent = animationSpeed.toFixed(1);
+                }
+                if (controls.terrainWireframe) {
+                    wireframe = controls.terrainWireframe.value === 'true';
+                }
+            }
+            
+            Object.values(controls).forEach(control => {
+                if (control) control.addEventListener('input', updateControls);
+            });
+            
+            updateControls();
+            render();
+            console.log('Terrain demo initialized');
+        }
+
+        // Sidebar functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('sidebar-open');
+        }
+        
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.remove('open');
+            mainContent.classList.remove('sidebar-open');
+        }
+        
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Close sidebar on mobile after selection
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
+            
+            // Initialize demo for this tab
+            if (demos[tabName] && !window[tabName + 'Initialized']) {
+                setTimeout(() => {
+                    demos[tabName]();
+                    window[tabName + 'Initialized'] = true;
+                }, 100);
+            }
+            
+            // Special handling for 3D tab
+            if (tabName === '3d' && !window['3dInitialized']) {
+                setTimeout(() => {
+                    initCubeDemo();
+                    initSphereDemo();
+                    initTerrainDemo();
+                    window['3dInitialized'] = true;
+                }, 100);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            hljs.highlightAll();
+            
+            // Initialize first demo
+            setTimeout(() => {
+                if (demos.gradient) {
+                    demos.gradient();
+                    window.gradientInitialized = true;
+                }
+            }, 200);
+            
+            console.log('Documentation initialized');
+        });
+    </script>
+            
+            <footer class="footer">
+                <p style="color: #666; font-size: 14px; margin: 0;">
+                    Created with Claude AI
+                </p>
+            </footer>
+        </div> <!-- /container -->
+    </div> <!-- /main-content -->
+</body>
+</html>
